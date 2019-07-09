@@ -1,6 +1,77 @@
-import neovim
-import os
+"""Docstring.nvim"""
+from typing import List
+
 import re
+import neovim
+
+
+TABSTOP = 4
+
+
+def add_indent(strings: List[str], tabstop: int):
+    """
+    Add indents for strings
+
+    Parameters
+    ---
+    strings: List[str]
+        input strings
+    tabstop: int
+        size of indent
+    """
+    res = []
+    for string in strings:
+        if string:
+            res.append(' '*tabstop + string)
+        else:
+            res.append(string)
+    return res
+
+
+def generate_arguments(arguments_string: str):
+    """
+    Create part of docstring for arguments
+
+    Parameters
+    ---
+    arguments_string (str)
+        string which contains arguments information
+    """
+    res = []
+    argument_strings = arguments_string.split(',')
+
+    for index, argument_string in enumerate(argument_strings):
+        if not arguments_string:
+            continue
+
+        elem = argument_string.split(':')
+        if len(elem) == 2:
+            argument, type_string = elem
+        else:
+            argument, = elem
+            type_string = f'<`{index}:type`>'
+
+        res.append(f'{argument} ({type_string})')
+        res.append(' '*TABSTOP + f'<`{index}:desc`>')
+
+    if res:
+        # headings
+        res = ['', 'Parameters', '---'] + res
+    return res
+
+
+def generate_return(return_string: str):
+    """
+    Create part of docstring for return value
+
+    Parameters
+    ---
+    return_string: str
+        return annotation
+    """
+    res = ['', 'Result', '---']
+    res.append(return_string.strip())
+    return res
 
 
 def analyze_method(method_string: str):
@@ -16,35 +87,30 @@ def analyze_method(method_string: str):
     ---
     input: def hoge     (     num: int,     nam: str):
     """
-    indent = '    '
+    indent = TABSTOP
+
     indent_result = re.search(r'^\s+', method_string)
     if indent_result:
-        indent += indent_result.group(0)
+        indent += len(indent_result.group(0))
 
-    search_result = re.search(r'\((.*)\)', method_string)
-    arguments_string = search_result.group(1)
+    method_string = re.sub(r'def\s+', '', method_string)
+    method_string = re.sub(r'\s*\:\s*$', '', method_string)
+
+    docstrings = ['"""', '<`0:desc`>']
+
+    arguments_search_result = re.search(r'\((.*)\)', method_string)
+    arguments_string = arguments_search_result.group(1)
     arguments_string = arguments_string.replace(' ', '')
+    docstrings += generate_arguments(arguments_string)
 
-    docstrings = ['"""', '<`1:description`>']
-    docstrings += ['', 'Parameters', '--------------']
-
-    argument_strings = arguments_string.split(',')
-    for index, argument_string in enumerate(argument_strings):
-        elem = argument_string.split(':')
-        if len(elem) == 2:
-            argument, type_string = elem
-        else:
-            argument, = elem
-            type_string = f'<`{index}:type`>'
-
-        line = f'- {argument} ({type_string})'
-        line += f': <`{index}:desc`>'
-        docstrings.append(line)
+    return_search_result = re.search(r'->(.*)', method_string)
+    if return_search_result:
+        return_string = return_search_result.group(1)
+        docstrings += generate_return(return_string)
 
     docstrings += ['"""']
-    docstrings = list(map(lambda d: indent+d, docstrings))
+    docstrings = add_indent(docstrings, indent)
     return docstrings
-
 
 
 @neovim.plugin
@@ -58,12 +124,7 @@ class Main(object):
         command = 'echo line(".")'  # FIXME: couldn't find suitable neovim API
         current_line_number = self.nvim.command_output(command) # FIXME
         current_line_number = int(current_line_number)-1
-        self.nvim.command(f'echo {current_line_number}')
-
         current_line = self.nvim.current.line
-        self.nvim.command(f'echo {dir(self.nvim.current)}')
-        self.nvim.command(f'echo "{current_line}"')
-        self.nvim.command(f'echo {dir(self.nvim.current.buffer)}')
 
         if not current_line.startswith('def '):
             return
@@ -73,7 +134,7 @@ class Main(object):
         while True:
             method_string += self.nvim.current.buffer[current_line_number+cursor]
             cursor += 1
-            if method_string.endswith('):'):
+            if method_string.endswith(':'):
                 break
 
         docstrings = analyze_method(method_string)
