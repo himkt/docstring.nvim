@@ -27,6 +27,7 @@ class Main(object):
 
     @neovim.command('Docstring', sync=True)
     def generate_docstring(self):
+        # FIXME (himkt): how to get nvim_set_current_line using neovim client
         command = 'echo line(".")'  # FIXME: couldn't find suitable neovim API
         current_line_number = self.nvim.command_output(command) # FIXME
         current_line_number = int(current_line_number)-1
