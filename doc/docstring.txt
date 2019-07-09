@@ -1,0 +1,16 @@
+*docstring.txt* A simple plugin for generating Python docstring.
+
+                        docstring.nvim
+
+=====================================================================
+
+CONTENTS                                 *docstring-contents*
+
+    1. Introduction ...................  |docstring-intro|
+
+Original Author:    Makoto Hiramatsu <himkt@cookpad.com>
+License:            MIT License
+
+INTRODUCTION                                *docstring-intro*
+
+A simple plugin for generating Python docstring used in NeoVim.
