@@ -16,8 +16,35 @@ def analyze_method(method_string: str):
     ---
     input: def hoge     (     num: int,     nam: str):
     """
-    # TODO (himkt): use re
-    return method_string.strip()
+    indent = '    '
+    indent_result = re.search(r'^\s+', method_string)
+    if indent_result:
+        indent += indent_result.group(0)
+
+    search_result = re.search(r'\((.*)\)', method_string)
+    arguments_string = search_result.group(1)
+    arguments_string = arguments_string.replace(' ', '')
+
+    docstrings = ['"""', '<`1:description`>']
+    docstrings += ['', 'Parameters', '--------------']
+
+    argument_strings = arguments_string.split(',')
+    for index, argument_string in enumerate(argument_strings):
+        elem = argument_string.split(':')
+        if len(elem) == 2:
+            argument, type_string = elem
+        else:
+            argument, = elem
+            type_string = f'<`{index}:type`>'
+
+        line = f'- {argument} ({type_string})'
+        line += f': <`{index}:desc`>'
+        docstrings.append(line)
+
+    docstrings += ['"""']
+    docstrings = list(map(lambda d: indent+d, docstrings))
+    return docstrings
+
 
 
 @neovim.plugin
@@ -45,11 +72,9 @@ class Main(object):
         method_string = ""
         while True:
             method_string += self.nvim.current.buffer[current_line_number+cursor]
+            cursor += 1
             if method_string.endswith('):'):
                 break
-            cursor += 1
 
-        signature = analyze_method(method_string)
-        self.nvim.command(f'echo "{signature}"')
-
-        # self.nvim.current.buffer.append(docstring, current_line_number)
+        docstrings = analyze_method(method_string)
+        self.nvim.current.buffer.append(docstrings, current_line_number+cursor)
