@@ -8,7 +8,9 @@ Python docstring generator.
 
 ### vim-plug
 
-`Plug 'himkt/docstring.nvim', { 'do': ':UpdateRemotePlugins' }`
+```viml
+Plug 'himkt/docstring.nvim', { 'do': ':UpdateRemotePlugins' }
+```
 
 ### dein.vim
 
