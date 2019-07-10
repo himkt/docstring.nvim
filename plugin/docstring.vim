@@ -4,6 +4,7 @@
 " License: MIT license
 "=============================================================================
 
+
 if exists('g:loaded_nvim_docstring')
   finish
 endif
