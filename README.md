@@ -16,6 +16,7 @@ After installing and configuring neosnippet, we can jump to placeholders by `Ctr
 ### vim-plug
 
 ```viml
+Plug 'Shougo/neosnippet.vim'
 Plug 'himkt/docstring.nvim', { 'do': ':UpdateRemotePlugins' }
 ```
 
@@ -24,5 +25,6 @@ Plug 'himkt/docstring.nvim', { 'do': ':UpdateRemotePlugins' }
 You may have to run `:UpdateRemotePlugins` manually.
 
 ```viml
+call dein#add('Shougo/neosnippet.vim')
 call dein#add('Shougo/deoplete.nvim')
 ```
