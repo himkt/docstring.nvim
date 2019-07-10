@@ -1,11 +1,13 @@
 """Docstring.nvim"""
 from typing import List
+from os import getenv
 
 import re
 import neovim
 
 
 TABSTOP = 4
+LOOP_LIMIT = int(getenv('LOOP_LIMIT', '1000'))
 
 
 def add_indent(strings: List[str], tabstop: int):
@@ -129,13 +131,14 @@ class Main(object):
         if not current_line.startswith('def '):
             return
 
-        cursor = 0
         method_string = ""
-        while True:
+        for cursor in range(LOOP_LIMIT):
             method_string += self.nvim.current.buffer[current_line_number+cursor]
-            cursor += 1
             if method_string.endswith(':'):
                 break
 
+        if cursor == LOOP_LIMIT-1:
+            return
+
         docstrings = analyze_method(method_string)
-        self.nvim.current.buffer.append(docstrings, current_line_number+cursor)
+        self.nvim.current.buffer.append(docstrings, current_line_number+cursor+1)
