@@ -48,9 +48,14 @@ def generate_arguments(arguments_string: str):
         elem = argument_string.split(":")
         if len(elem) == 2:
             argument, type_string = elem
+            type_string = type_string.strip(' ')
         else:
             argument, = elem
             type_string = f"<`{index}:type`>"
+
+        argument = argument.strip(' ')
+        if argument == 'self':
+            continue
 
         res.append(f"{argument} ({type_string})")
         res.append(" " * TABSTOP + f"<`{index}:desc`>")
