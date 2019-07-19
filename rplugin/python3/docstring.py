@@ -127,7 +127,7 @@ class Main(object):
         current_line_number = int(current_line_number) - 1
         current_line = self.nvim.current.line
 
-        if not current_line.startswith("def "):
+        if 'def' not in current_line:
             return
 
         method_string = ""
